@@ -56,3 +56,5 @@ def load_report_prompt() -> str:
 
 if __name__ == '__main__':
     print(load_system_prompt())
+    print(load_rag_prompt())
+    print(load_report_prompt())

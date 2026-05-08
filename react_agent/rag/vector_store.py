@@ -1,7 +1,7 @@
 import hashlib
 import os
 
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from modle.factory import embedding_model
@@ -39,95 +39,110 @@ class VectorStoreService:
         return self.vector_store.as_retriever(search_kwargs={"k": chroma_config["k"]})
 
 
-def load_documents(self):
-    """
-     加载文档
-    :param self:
-    :return:
-    """
-    global documents
-
-    def check_md5(md5_str):
+    def load_documents(self):
         """
-        校验md5
-        :param md5_str:
+         加载文档
+        :param self:
         :return:
         """
-        if not os.path.exists(get_abs_path(chroma_config["md5_path"])):
-            # 不存在则创建
-            open(get_abs_path(chroma_config["md5_path"]), 'w', encoding='utf-8').close()
-            return False
-        else:
-            for line in open(get_abs_path(chroma_config["md5_path"]), encoding='utf-8').readlines():
-                line = line.strip()
-                if line == md5_str:
-                    return True
+        global documents
 
-            return False
+        def check_md5(md5_str):
+            """
+            校验md5
+            :param md5_str:
+            :return:
+            """
+            if not os.path.exists(get_abs_path(chroma_config["md5_hex_store"])):
+                # 不存在则创建
+                open(get_abs_path(chroma_config["md5_hex_store"]), 'w', encoding='utf-8').close()
+                return False
+            else:
+                for line in open(get_abs_path(chroma_config["md5_hex_store"]), encoding='utf-8').readlines():
+                    line = line.strip()
+                    if line == md5_str:
+                        return True
 
-    # 保存md5
-    def save_md5(md5_str):
-        """
-        #保存md5
-        :param md5_str:
-        :return:
-        """
-        with open(get_abs_path(chroma_config["md5_path"]), 'a', encoding='utf-8') as f:
-            f.write(md5_str + '\n')
+                return False
 
-        print("保存md5,保存成功")
+        # 保存md5
+        def save_md5(md5_str):
+            """
+            #保存md5
+            :param md5_str:
+            :return:
+            """
+            with open(get_abs_path(chroma_config["md5_hex_store"]), 'a', encoding='utf-8') as f:
+                f.write(md5_str + '\n')
 
-    # 获取md5
-    def get_md5(input_str, encoding='utf-8'):
-        """
-        获取md5
-        :param input_str:
-        :param encoding:
-        :return:
-        """
-        # 将字符串转换字节数组
-        bytes_data = input_str.encode(encoding)
-        # 计算md5
-        md5 = hashlib.md5()
-        md5.update(bytes_data)
-        return md5.hexdigest()
+            print("保存md5,保存成功")
 
-    def get_file_documents(file_path):
-        """
-         获取文档
-        :param file_path:
-        :return:
-        """
-        if file_path.endswith(".pdf"):
-            return pdf_loader(file_path, chroma_config["pdf_password"])
+        # 获取md5
+        def get_md5(input_str, encoding='utf-8'):
+            """
+            获取md5
+            :param input_str:
+            :param encoding:
+            :return:
+            """
+            # 将字符串转换字节数组
+            bytes_data = input_str.encode(encoding)
+            # 计算md5
+            md5 = hashlib.md5()
+            md5.update(bytes_data)
+            return md5.hexdigest()
 
-        if file_path.endswith(".txt"):
-            return txt_loader(file_path)
+        def get_file_documents(file_path):
+            """
+             获取文档
+            :param file_path:
+            :return:
+            """
+            if file_path.endswith(".pdf"):
+                return pdf_loader(file_path,None)
 
-        return []
+            if file_path.endswith(".txt"):
+                return txt_loader(file_path)
 
-    file_list = listdir_with_allowed_types(chroma_config["data_path"],
-                                           tuple(chroma_config["allow_knowledge_file_type"]))
+            return []
 
-    for file_path in file_list:
-        try:
-            md5_str = get_md5(file_path)
-            if check_md5(md5_str):
-                logger.info(f'[load_documents]文件已存在: {file_path}')
+
+
+        file_list = listdir_with_allowed_types(get_abs_path(chroma_config["data_path"]),
+                                               tuple(chroma_config["allow_knowledge_file_type"]))
+
+        for file_path in file_list:
+            try:
+                md5_str = get_md5(file_path)
+                if check_md5(md5_str):
+                    logger.info(f'[load_documents]文件已存在: {file_path}')
+                    continue
+                documents = get_file_documents(file_path)
+                if not documents:
+                    logger.info(f'[load_documents]文件不存在: {file_path}')
+                    continue
+
+                spliter_documents = self.spliter.split_documents(documents)
+                if not spliter_documents:
+                    logger.info(f'[load_documents]文件不存在: {file_path}')
+                    continue
+
+                self.vector_store.add_documents(spliter_documents)
+                save_md5(md5_str)
+                logger.info(f'[load_documents]文件保存成功: {file_path}')
+
+            except Exception as e:
+                logger.error(f'[load_documents]文件保存失败: {file_path}, {str(e)}',except_info=True)
                 continue
-            documents = get_file_documents(file_path)
-            if not documents:
-                logger.info(f'[load_documents]文件不存在: {file_path}')
-                continue
 
-            spliter_documents = self.spliter.split_documents(documents)
-            if not spliter_documents:
-                logger.info(f'[load_documents]文件不存在: {file_path}')
-                continue
 
-            self.vector_store.add_documents(spliter_documents)
-            save_md5(md5_str)
-            logger.info(f'[load_documents]文件保存成功: {file_path}')
 
-        except Exception as e:
-            logger.error(f'[load_documents]文件保存失败: {file_path}, {e}')
+if __name__ == '__main__':
+    vector_store_service = VectorStoreService()
+    vector_store_service.load_documents()
+    retriever = vector_store_service.get_retriever()
+    res = retriever.invoke("迷路")
+
+    for i in res:
+        print(i.page_content)
+        print("=" * 50)
