@@ -44,7 +44,7 @@ class ReActAgent(object):
 if __name__ == '__main__':
     agent = ReActAgent()
     # query = "扫地机器人在我所在的地区的气温下如何保养？"
-    query = "给我生成我的使用报告"
+    query = "给我生成一个使用报告"
     for chunk in agent.execute_stream(query):
         print(chunk, end="", flush=True)
 
