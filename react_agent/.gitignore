@@ -3,4 +3,6 @@
 __pycache__/
 *.pyc
 .env
+.gitignore
+uv.lock
 # pyproject.toml  # 建议保留这个文件，除非你有特殊原因
