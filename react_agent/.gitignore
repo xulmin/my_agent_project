@@ -1,4 +1,6 @@
-.idea
-.gitignore
 .venv
-pyproject.toml
+.idea/
+__pycache__/
+*.pyc
+.env
+# pyproject.toml  # 建议保留这个文件，除非你有特殊原因
