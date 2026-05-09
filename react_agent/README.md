@@ -182,8 +182,8 @@ env
 
 阿里云 DashScope 配置
 DASHSCOPE_API_KEY=your-api-key-here 
-ALI_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1 
-ALI_MODE=qwen3.5-plus
+ALI_BASE_URL=you-base-url-here
+ALI_MODE=you-model-name-here
 
 Tavily 网络搜索（可选）
 TAVILY_API_KEY=your-tavily-key-here
@@ -191,10 +191,11 @@ TAVILY_API_KEY=your-tavily-key-here
 LangSmith 追踪（可选）
 LANGSMITH_API_KEY=your-langsmith-key-here 
 LANGSMITH_TRACING=true 
-LANGSMITH_PROJECT=react_agent
+LANGSMITH_PROJECT=you-project-name-here
 
 Ollama 本地模型（可选）
-OLLAMA_BASE_URL=http://localhost:11434/v1 OLLAMA_MODEL=qwen3.5:2b
+OLLAMA_BASE_URL=you-ollama-base-url-here
+OLLAMA_MODEL=you-model-name-here
 ```
 #### 6. 准备知识库数据
 
@@ -244,9 +245,8 @@ Agent 会自动调用工具获取额外信息：
 项目采用 YAML 配置文件管理系统，主要配置文件位于 `config/` 目录：
 
 ### config/agent.yml
+
 Agent 行为与任务流程配置
-
-
 ```bash
 python from langchain.tools import tool
 @tool def my_custom_tool(param: str) -> str:
@@ -278,7 +278,6 @@ tools=[..., my_custom_tool]
 ```bash
 tail -f logs/agent_$(date +%Y%m%d).log
 ```
-
 ---
 
 ## 📝 常见问题
@@ -301,7 +300,7 @@ tail -f logs/agent_$(date +%Y%m%d).log
 ```bash
 env 
 LANGSMITH_TRACING=true 
-LANGSMITH_API_KEY=your-key
+LANGSMITH_API_KEY=your-langsmith-key-here
 ```
 访问 [LangSmith](https://smith.langchain.com/) 查看详细的执行轨迹。
 
